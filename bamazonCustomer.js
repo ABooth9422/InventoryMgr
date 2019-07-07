@@ -28,8 +28,7 @@ var connection = mysql.createConnection({
           var choiceArray=[]
          
           for (let i = 0; i < resp.length; i++) {
-              choiceArray.push('ID: '+resp[i].id,'Product Name: '+resp[i].product_name,'Price: '+resp[i].price)
-              choiceArray.join('-')
+              choiceArray.push(`ID: ${resp[i].id} Product Name: ${resp[i].product_name} Price: ${resp[i].price}`)
             
           }
           console.log(choiceArray)
@@ -40,7 +39,7 @@ var connection = mysql.createConnection({
                 name:'choices',
                 message:'What would you like to buy?!',
                 type:'list',
-                choices:[choiceArray[0]]
+                choices:choiceArray
             }
         ])
       })
