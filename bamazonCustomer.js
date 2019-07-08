@@ -46,10 +46,10 @@ function afterConnection() {
             currentStock.push(resp[i].stock_quantity)
         }
 
-        console.log('\n**************************')
-        console.log('Here is the following items that you can purchase:')
-        console.log(choiceArray)
-        console.log('\n**************************')
+                    console.log('\n********************************************************')
+                    console.log('Here is the following items that you can purchase:')
+                    console.log(choiceArray)
+                    console.log('\n********************************************************')
         inquirer
             .prompt([{
                     name: 'choices',
@@ -61,8 +61,9 @@ function afterConnection() {
                 }
             ]).then(function (resp, err) {
                 if (err) throw err
-                if (resp.choices > 10) {
-                    console.log(`Sorry there is no item that exists for ID ${resp.choices}`)
+                if (resp.choices > choiceArray.length) {
+                    console.log(`\n*******************************************************`)
+                    log(invColor.bold(`Sorry there is no item that exists for ID ${resp.choices}`))
                     afterConnection();
                 } else if (resp.choices <= 10) {
                    // inventoryAvailable(resp.choices-1,resp.itemqty)
@@ -94,21 +95,89 @@ function afterConnection() {
                         .prompt(
                             [{
                                 name: 'again',
-                                message: 'Would you like to make another purchase?',
-                                type: 'confirm'
+                                message: 'What would you like to do now?',
+                                type: 'list',
+                                choices:['Make Another Purchase','Manager Functions','Finished']
                             }]
                         ).then(function (resp, err) {
                             if (err) throw err
-                            if (resp.again) {
-                                afterConnection();
-                            } else
-                                connection.end();
+
+                            switch (resp.again) {
+                                case 'Make Another Purchase':
+                                    afterConnection();
+                                    break;
+                                case 'Manager Functions':
+                                    managerFunction(choiceArray)
+                                    break;
+                                case 'Finished':
+                                    connection.end();
+                                    break;
+                                default:
+                                    break;
+                            }
+                          
 
                         })
                 }
             })
             
     })
+
+
+    function managerFunction(choiceArray){
+        inquirer
+        .prompt([
+            {
+                name:'managerMenu',
+                message:'Manager Menu',
+                type:'list',
+                choices:['Item Available','View Low Inventory','Add to Inventory','Add a New Product']
+            }
+        ]).then(function(resp,err){
+            if(err) throw err;
+            switch (resp.managerMenu) {
+                    case 'Item Available':
+                        itemAvailable(choiceArray)
+                    break;
+                    case 'View Low Inventory':
+                        viewLowInventory()
+                    break;
+                    case 'Add to Inventory':
+                        addInventory()
+                    break;
+                    case 'Add a New Product':
+                        addProduct()
+                    break;
+            
+                default:
+                    break;
+            }
+        })
+    }
+
+
+
+
+
+    function itemAvailable(choiceArray){
+        console.log("****************************************")
+        console.log("Current list of items available for sale")
+        console.log(choiceArray)
+        console.log("****************************************")
+        managerFunction(choiceArray);
+    }
+    function viewLowInventory(){
+
+    }
+
+    function addInventory(){
+
+    }
+    function addProduct(){
+
+    }
+
+
 //    function inventoryAvailable(choices,amount){
         
 //         var query=`SELECT stock_quantity FROM products WHERE id=${choices}`
