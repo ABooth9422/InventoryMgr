@@ -29,7 +29,7 @@ connection.connect(function (err) {
 })
 
 function afterConnection() {
-    var query = 'SELECT id,product_name,price,stock_quantity FROM products'
+    var query = 'SELECT id,product_name,price,stock_quantity,department_name FROM products'
     
     connection.query(query, function (err, resp) {
         if (err) throw err
@@ -40,7 +40,7 @@ function afterConnection() {
         var currentStock=[]
 
         for (let i = 0; i < resp.length; i++) {
-            choiceArray.push(`ID: ${resp[i].id} || Product Name: ${resp[i].product_name} || Price: ${resp[i].price} || Quantity on Hand: ${resp[i].stock_quantity}`)
+            choiceArray.push(`ID: ${resp[i].id} || Product Name: ${resp[i].product_name} || Rarity: ${resp[i].department_name} || Price: ${resp[i].price} || Quantity on Hand: ${resp[i].stock_quantity}`)
             resultArray.push(resp[i].product_name)
             priceArray.push(resp[i].price)
             currentStock.push(resp[i].stock_quantity)
@@ -209,26 +209,20 @@ function afterConnection() {
                 message:'How many are available for sale?'
             }
         ]).then(function(inqResp,err){
+            
             if(err) throw err;
-            var query= `INSERT INTO products ?`
-            connection.query(
-                query,
-                [
+            
+            connection.query("INSERT INTO products SET ?",
                     {
-                        product_name:inqResp.product_name
-                    },
-                    {
-                        department_name:inqResp.deptName
-                    },
-                    {
-                        price:inqResp.price
-                    },
-                    {
+                        product_name:inqResp.productName,
+                        department_name:inqResp.deptName,
+                        price:inqResp.price,
                         stock_quantity:inqResp.quantity
                     }
-                ],
+                ,
                 
                 function(err,resp){
+                    
                 console.log("*****************Your Product Has Been Added***********************")
                 if(err) throw err;
                 managerFunction();
