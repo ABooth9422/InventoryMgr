@@ -131,7 +131,7 @@ function afterConnection() {
                 name:'managerMenu',
                 message:'Manager Menu',
                 type:'list',
-                choices:['Item Available','View Low Inventory','Add to Inventory','Add a New Product']
+                choices:['Item Available','View Low Inventory','Add to Inventory','Add a New Product','Main Menu','Exit']
             }
         ]).then(function(resp,err){
             if(err) throw err;
@@ -143,11 +143,18 @@ function afterConnection() {
                         viewLowInventory()
                     break;
                     case 'Add to Inventory':
-                        addInventory()
+                        addInventory(choiceArray)
                     break;
                     case 'Add a New Product':
                         addProduct()
                     break;
+                    case 'Main Menu':
+                        afterConnection();
+                    break;
+                    case 'Exit':
+                        connection.end()
+                    break;
+                    
             
                 default:
                     break;
@@ -167,14 +174,98 @@ function afterConnection() {
         managerFunction(choiceArray);
     }
     function viewLowInventory(){
-
+        var query = `SELECT *FROM products WHERE stock_quantity<10`
+        connection.query(query,function(err,resp){
+            console.log('**********************************************')
+            console.log('************Inventory Less Than 10************')
+            if(err) throw err;
+            for (let i = 0; i < resp.length; i++) {
+                
+                console.log(`ID: ${resp[i].id} || Product Name: ${resp[i].product_name} || Price: ${resp[i].price} || Quantity on Hand: ${resp[i].stock_quantity}`)
+                console.log('\n')
+            }
+            managerFunction();
+        })
+       
     }
 
-    function addInventory(){
-
-    }
     function addProduct(){
-
+        inquirer.
+        prompt([
+            {
+                name:'productName',
+                message:'What is the name of the product you want to add?'
+            },
+            {
+                name:'deptName',
+                message:'What is the rarity of the item?'
+            },
+            {
+                name:'price',
+                message:'How much does it cost?'
+            },
+            {
+                name:'quantity',
+                message:'How many are available for sale?'
+            }
+        ]).then(function(inqResp,err){
+            if(err) throw err;
+            var query= `INSERT INTO products ?`
+            connection.query(
+                query,
+                [
+                    {
+                        product_name:inqResp.product_name
+                    },
+                    {
+                        department_name:inqResp.deptName
+                    },
+                    {
+                        price:inqResp.price
+                    },
+                    {
+                        stock_quantity:inqResp.quantity
+                    }
+                ],
+                
+                function(err,resp){
+                console.log("*****************Your Product Has Been Added***********************")
+                if(err) throw err;
+                managerFunction();
+            })
+          
+        })
+    }
+    function addInventory(choiceArray){
+        console.log('**************************************************')
+        console.log(choiceArray)
+        console.log('**What item do you want to add to the inventory?**')
+        console.log('************Select item by ID ********************')
+        inquirer.prompt([
+            {
+                name:'selection',
+                message:'Provide The ID for the item you want to add'
+            },
+            {
+                name:'qtyAdd',
+                message:'How many would you like to add?'
+            }
+        ]).then(function(resp,err){
+           
+            var stockAdd=`stock_quantity=stock_quantity+`+resp.qtyAdd
+            var query= `UPDATE products SET ${stockAdd} WHERE ?`
+            connection.query(query,
+                [
+                   {
+                    id:resp.selection  
+                   }
+                ],
+                function(err,resp){
+                if(err) throw err;
+                console.log('*********************Product Updated************************')
+                managerFunction();
+            })
+        })
     }
 
 
