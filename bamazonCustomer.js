@@ -143,6 +143,23 @@ function afterConnection() {
         //made a manager function for the second part of the challenge that prompts users into making additional querys
         inquirer
         .prompt([
+            //put a password on there for a manager just for fun
+            {
+                name:'password',
+                type:'password',
+                message:'What is the Manager Password?',
+                mask:'*'
+            }]).then(function(resp,err){
+                var inPassword=resp.password
+                if (err) throw err
+                if (inPassword!=='1234'){
+                    log(invColor.bold("ACCESS DENIED PLEASE TRY AGAIN"))
+                    managerFunction();
+                }else{
+                    log(startColor.bold('ACCESS GRANTED'))
+          
+            inquirer.prompt([
+
             {
                 //manager menu has additional functions that were listed as part 2
                 name:'managerMenu',
@@ -180,7 +197,8 @@ function afterConnection() {
             }
         })
     }
-
+    })
+}          
 
 
 
