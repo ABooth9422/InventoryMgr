@@ -1,55 +1,63 @@
+
+//what we are requiring from our npm dependancies
+
 var mysql = require('mysql')
 var inquirer = require('inquirer')
 var chalk = require('chalk')
+
+//created some variables for chalk display
 
 var startColor = chalk.whiteBright.bgGreen
 var invColor=chalk.black.bgRed
 const log = console.log
 
 
-
+//started our connection to the mySQL database
 var connection = mysql.createConnection({
     host: "localhost",
 
-    // Your port; if not 3306
+   
     port: 3306,
 
-    // Your username
+   
     user: "root",
 
-    // Your password
+   
     password: "Wow0148407!",
     database: "bamazon"
 });
-
+//call on our connection object and perform the connect function
 connection.connect(function (err) {
     if (err) throw err
-
+    // execute the afterConnection() function after we establish a connection
     afterConnection();
 })
 
 function afterConnection() {
+
+    //query parameters for what we want to select from our SQL table
     var query = 'SELECT id,product_name,price,stock_quantity,department_name FROM products'
-    
+    //establishing the query
     connection.query(query, function (err, resp) {
         if (err) throw err
-
+        //using various arrays from the initial query to use at other points in the code
         var choiceArray = []
         var resultArray = []
         var priceArray = []
         var currentStock=[]
-
+        //need a for loop to be able to go through all of the responses
         for (let i = 0; i < resp.length; i++) {
             choiceArray.push(`ID: ${resp[i].id} || Product Name: ${resp[i].product_name} || Rarity: ${resp[i].department_name} || Price: ${resp[i].price} || Quantity on Hand: ${resp[i].stock_quantity}`)
             resultArray.push(resp[i].product_name)
             priceArray.push(resp[i].price)
             currentStock.push(resp[i].stock_quantity)
         }
-
+                // initial display when the program is executed
                     console.log('\n********************************************************')
                     console.log('Here is the following items that you can purchase:')
                     console.log(choiceArray)
                     console.log('\n********************************************************')
+                //the two basic commands required in the initial program from inquirer
         inquirer
             .prompt([{
                     name: 'choices',
@@ -60,20 +68,24 @@ function afterConnection() {
                     message: 'How many would you like to buy?'
                 }
             ]).then(function (resp, err) {
+                // with the response of inquirer we execute a block of code to make a purchase
                 if (err) throw err
+                //we are checking to see if the user input an id that does not exist
+                // if the id does not exist it returns to the top of the function
                 if (resp.choices > choiceArray.length) {
                     console.log(`\n*******************************************************`)
                     log(invColor.bold(`Sorry there is no item that exists for ID ${resp.choices}`))
                     afterConnection();
-                } else if (resp.choices <= 10) {
-                   // inventoryAvailable(resp.choices-1,resp.itemqty)
+                } else if (resp.choices <= choiceArray.length) {
+                  //if the id that they selected is less than or equal to the length that we put into our choice array we run the code below
                     var inventory= currentStock[resp.choices-1]
                     var amount= resp.itemqty
+                    //made a conditional if the amount that the user wanted to buy is greater than what inventory we have available we block it from proceeding
                     if(amount>inventory){
                        log(invColor.bold("Not enough inventory available to complete this order, Try Again!"))
                     }else{
 
-                    
+                    //we have to use some trickery pre query to put into the next query where we are subtracting values from our table
                     var stock = `stock_quantity=stock_quantity-` + resp.itemqty
                     var total = priceArray[resp.choices - 1] * resp.itemqty
                     connection.query(
@@ -87,10 +99,13 @@ function afterConnection() {
                         }
 
                     )
+                    //logging the results of the purchase and the amount with literals! They are a life saver for this project
                     log(startColor.bold(`Congratulations you have purchased ${resp.itemqty} of ${resultArray[resp.choices -1]}`))
                     log(startColor.bold(`The total for your order is: $ ${total}`))
                     log('\n')
                     }
+                    //after the initial purchase is made we prompt for what they want to do next.
+                    //if they want to make another purchase , go to a manager menu, or if they want to exit the program
                     inquirer
                         .prompt(
                             [{
@@ -101,7 +116,7 @@ function afterConnection() {
                             }]
                         ).then(function (resp, err) {
                             if (err) throw err
-
+                            //made a switch case to help us with the next menu and what we are trying to do.
                             switch (resp.again) {
                                 case 'Make Another Purchase':
                                     afterConnection();
@@ -125,9 +140,11 @@ function afterConnection() {
 
 
     function managerFunction(choiceArray){
+        //made a manager function for the second part of the challenge that prompts users into making additional querys
         inquirer
         .prompt([
             {
+                //manager menu has additional functions that were listed as part 2
                 name:'managerMenu',
                 message:'Manager Menu',
                 type:'list',
@@ -135,6 +152,8 @@ function afterConnection() {
             }
         ]).then(function(resp,err){
             if(err) throw err;
+            //made a switch statement to help us navigate from the choices of the manager menu and execute the proper function
+            //to that option.
             switch (resp.managerMenu) {
                     case 'Item Available':
                         itemAvailable(choiceArray)
@@ -167,29 +186,35 @@ function afterConnection() {
 
 
     function itemAvailable(choiceArray){
+        //redisplaying all items available for sale
         console.log("****************************************")
         console.log("Current list of items available for sale")
         console.log(choiceArray)
         console.log("****************************************")
+        //executing a call back to put users back in the manager function menu upon the request being completed
         managerFunction(choiceArray);
     }
     function viewLowInventory(){
+        //wrote a block for inventory thats less than 10
         var query = `SELECT *FROM products WHERE stock_quantity<10`
         connection.query(query,function(err,resp){
             console.log('**********************************************')
             console.log('************Inventory Less Than 10************')
             if(err) throw err;
             for (let i = 0; i < resp.length; i++) {
-                
+                //looping through the responses to log all the information for the propery quantities that were a result of the query.
                 console.log(`ID: ${resp[i].id} || Product Name: ${resp[i].product_name} || Price: ${resp[i].price} || Quantity on Hand: ${resp[i].stock_quantity}`)
                 console.log('\n')
             }
+            //calling back the manager function menu
             managerFunction();
         })
        
     }
 
     function addProduct(){
+
+        //function added to if they wanted to add an entire product
         inquirer.
         prompt([
             {
@@ -211,7 +236,7 @@ function afterConnection() {
         ]).then(function(inqResp,err){
             
             if(err) throw err;
-            
+            //object query based on response that we insert into the table
             connection.query("INSERT INTO products SET ?",
                     {
                         product_name:inqResp.productName,
@@ -222,19 +247,22 @@ function afterConnection() {
                 ,
                 
                 function(err,resp){
-                    
+                    //letting the user know the product has been added
                 console.log("*****************Your Product Has Been Added***********************")
                 if(err) throw err;
+                // executing the callback for the manager menu
                 managerFunction();
             })
           
         })
     }
     function addInventory(choiceArray){
+        //displaying the results of the choice array so that the user can see which item they want to add
         console.log('**************************************************')
         console.log(choiceArray)
         console.log('**What item do you want to add to the inventory?**')
         console.log('************Select item by ID ********************')
+        //using inquirer to get the responses of how many of the item they want to add
         inquirer.prompt([
             {
                 name:'selection',
@@ -245,7 +273,7 @@ function afterConnection() {
                 message:'How many would you like to add?'
             }
         ]).then(function(resp,err){
-           
+           //created a variable to hold the query parameters to make it cleaner
             var stockAdd=`stock_quantity=stock_quantity+`+resp.qtyAdd
             var query= `UPDATE products SET ${stockAdd} WHERE ?`
             connection.query(query,
@@ -257,37 +285,10 @@ function afterConnection() {
                 function(err,resp){
                 if(err) throw err;
                 console.log('*********************Product Updated************************')
+                // executing a callback from the manager function menu
                 managerFunction();
             })
         })
     }
 
-
-//    function inventoryAvailable(choices,amount){
-        
-//         var query=`SELECT stock_quantity FROM products WHERE id=${choices}`
-//         connection.query(query,function(err,response){
-//             if(err) throw err;
-           
-//             var inventory= response[0].stock_quantity
-//             if(amount>inventory){
-//                  return false
-                    
-//             }
-           
-//         })
-       
-//     }
 }
-
-
-
-// List a set of menu options:
-// View Products for Sale
-// View Low Inventory
-// Add to Inventory
-// Add New Product
-// If a manager selects View Products for Sale, the app should list every available item: the item IDs, names, prices, and quantities.
-// If a manager selects View Low Inventory, then it should list all items with an inventory count lower than five.
-// If a manager selects Add to Inventory, your app should display a prompt that will let the manager "add more" of any item currently in the store.
-// If a manager selects Add New Product, it should allow the manager to add a completely new product to the store.
