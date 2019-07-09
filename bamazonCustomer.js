@@ -47,7 +47,7 @@ function afterConnection() {
         var currentStock = []
         //need a for loop to be able to go through all of the responses
         for (let i = 0; i < resp.length; i++) {
-            choiceArray.push(`ID: ${resp[i].id} || Product Name: ${resp[i].product_name} || Rarity: ${resp[i].department_name} || Price: ${resp[i].price} || Quantity on Hand: ${resp[i].stock_quantity}`)
+            choiceArray.push(`ID: ${resp[i].id} || Product Name: ${resp[i].product_name} || Rarity: ${resp[i].department_name} || Price: ${resp[i].price.toFixed(2)} || Quantity on Hand: ${resp[i].stock_quantity}`)
             resultArray.push(resp[i].product_name)
             priceArray.push(resp[i].price)
             currentStock.push(resp[i].stock_quantity)
@@ -226,7 +226,7 @@ function afterConnection() {
             if (err) throw err;
             for (let i = 0; i < resp.length; i++) {
                 //looping through the responses to log all the information for the propery quantities that were a result of the query.
-                console.log(`ID: ${resp[i].id} || Product Name: ${resp[i].product_name} || Price: ${resp[i].price} || Quantity on Hand: ${resp[i].stock_quantity}`)
+                console.log(`ID: ${resp[i].id} || Product Name: ${resp[i].product_name} || Price: ${resp[i].price.toFixed(2)} || Quantity on Hand: ${resp[i].stock_quantity}`)
                 console.log('\n')
             }
             //calling back the manager function menu
@@ -271,7 +271,7 @@ function afterConnection() {
                    log(startColor.bold("*****************Your Product Has Been Added***********************"))
                     if (err) throw err;
                     // executing the callback for the manager menu
-                    managerFunction(newChoiceArray);
+                    managerFunction(tableUpdate);
                 })
 
         })
@@ -318,7 +318,7 @@ function updateArray(callback){
             tableUpdate=[]
         
         for (let i = 0; i < resp.length; i++) {
-            tableUpdate.push(`ID: ${resp[i].id} || Product Name: ${resp[i].product_name} || Rarity: ${resp[i].department_name} || Price: ${resp[i].price} || Quantity on Hand: ${resp[i].stock_quantity}`)
+            tableUpdate.push(`ID: ${resp[i].id} || Product Name: ${resp[i].product_name} || Rarity: ${resp[i].department_name} || Price: ${resp[i].price.toFixed(2)} || Quantity on Hand: ${resp[i].stock_quantity}`)
            
         }
         callback();
