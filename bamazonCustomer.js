@@ -3,8 +3,11 @@
 var mysql = require('mysql')
 var inquirer = require('inquirer')
 var chalk = require('chalk')
-var tableUpdate=[]
 
+var Table= require('cli-table')
+
+var lowtable;
+var table;
 //created some variables for chalk display
 
 var startColor = chalk.whiteBright.bgGreen
@@ -45,18 +48,18 @@ function afterConnection() {
         var resultArray = []
         var priceArray = []
         var currentStock = []
+       resetTable();
         //need a for loop to be able to go through all of the responses
         for (let i = 0; i < resp.length; i++) {
             choiceArray.push(`ID: ${resp[i].id} || Product Name: ${resp[i].product_name} || Rarity: ${resp[i].department_name} || Price: ${resp[i].price.toFixed(2)} || Quantity on Hand: ${resp[i].stock_quantity}`)
             resultArray.push(resp[i].product_name)
             priceArray.push(resp[i].price)
             currentStock.push(resp[i].stock_quantity)
+            table.push([resp[i].id,resp[i].product_name,resp[i].department_name,resp[i].price.toFixed(2),resp[i].stock_quantity])
         }
-        // initial display when the program is executed
-        console.log('\n********************************************************')
         console.log('Here is the following items that you can purchase:')
-        console.log(choiceArray)
-        console.log('\n********************************************************')
+        console.log(table.toString())
+        
         //the two basic commands required in the initial program from inquirer
         inquirer
             .prompt([{
@@ -117,7 +120,7 @@ function afterConnection() {
                         ).then(function (resp, err) {
                             if (err) throw err
                             //made a switch case to help us with the next menu and what we are trying to do.
-                         
+                            lowInvTable()
                             switch (resp.again) {
                                 case 'Make Another Purchase':
                                     afterConnection();
@@ -175,16 +178,16 @@ function afterConnection() {
                         updateArray(function(){        
                         switch (resp.managerMenu) {
                             case 'Item Available':
-                                itemAvailable(tableUpdate)
+                                itemAvailable(table)
                                 break;
                             case 'View Low Inventory':
-                                viewLowInventory(tableUpdate)
+                                viewLowInventory(lowInvTable)
                                 break;
                             case 'Add to Inventory':
-                                addInventory(tableUpdate)
+                                addInventory(table)
                                 break;
                             case 'Add a New Product':
-                                addProduct(tableUpdate)
+                                addProduct(table)
                                 break;
                             case 'Main Menu':
                                 afterConnection();
@@ -206,15 +209,15 @@ function afterConnection() {
 
 
 
-    function itemAvailable(tableUpdate) {
+    function itemAvailable(table) {
         //redisplaying all items available for sale
        
         console.log("****************************************")
         console.log("Current list of items available for sale")
-        console.log(tableUpdate)
+        console.log(table.toString())
         console.log("****************************************")
         //executing a call back to put users back in the manager function menu upon the request being completed
-        managerFunction(tableUpdate);
+        managerFunction(table);
     }
 
     function viewLowInventory() {
@@ -226,11 +229,14 @@ function afterConnection() {
             if (err) throw err;
             for (let i = 0; i < resp.length; i++) {
                 //looping through the responses to log all the information for the propery quantities that were a result of the query.
-                console.log(`ID: ${resp[i].id} || Product Name: ${resp[i].product_name} || Price: ${resp[i].price.toFixed(2)} || Quantity on Hand: ${resp[i].stock_quantity}`)
-                console.log('\n')
+                // console.log(`ID: ${resp[i].id} || Product Name: ${resp[i].product_name} || Price: ${resp[i].price.toFixed(2)} || Quantity on Hand: ${resp[i].stock_quantity}`)
+                // console.log('\n')
+                lowtable.push([resp[i].id,resp[i].product_name,resp[i].price.toFixed(2),resp[i].stock_quantity])
+                
             }
+            console.log(lowtable.toString())
             //calling back the manager function menu
-            managerFunction(tableUpdate);
+            managerFunction(table);
         })
 
     }
@@ -271,16 +277,16 @@ function afterConnection() {
                    log(startColor.bold("*****************Your Product Has Been Added***********************"))
                     if (err) throw err;
                     // executing the callback for the manager menu
-                    managerFunction(tableUpdate);
+                    managerFunction(table);
                 })
 
         })
     }
 
-    function addInventory(tableUpdate) {
+    function addInventory(table) {
         //displaying the results of the choice array so that the user can see which item they want to add
         console.log('**************************************************')
-        console.log(tableUpdate)
+        console.log(table.toString())
         console.log('**What item do you want to add to the inventory?**')
         console.log('************Select item by ID ********************')
         //using inquirer to get the responses of how many of the item they want to add
@@ -304,7 +310,7 @@ function afterConnection() {
                     if (err) throw err;
                     console.log('*********************Product Updated************************')
                     // executing a callback from the manager function menu
-                    managerFunction(tableUpdate);
+                    managerFunction(table);
                 })
         })
     }
@@ -315,11 +321,11 @@ function updateArray(callback){
     var query = 'SELECT id,product_name,price,stock_quantity,department_name FROM products'
     connection.query(query, function (err, resp) {
         if (err) throw err
-            tableUpdate=[]
+            resetTable()
         
         for (let i = 0; i < resp.length; i++) {
-            tableUpdate.push(`ID: ${resp[i].id} || Product Name: ${resp[i].product_name} || Rarity: ${resp[i].department_name} || Price: ${resp[i].price.toFixed(2)} || Quantity on Hand: ${resp[i].stock_quantity}`)
-           
+            //table.push(`ID: ${resp[i].id} || Product Name: ${resp[i].product_name} || Rarity: ${resp[i].department_name} || Price: ${resp[i].price.toFixed(2)} || Quantity on Hand: ${resp[i].stock_quantity}`)
+            table.push([resp[i].id,resp[i].product_name,resp[i].department_name,resp[i].price.toFixed(2),resp[i].stock_quantity])
         }
         callback();
        
@@ -327,4 +333,18 @@ function updateArray(callback){
    
 }
 
+function resetTable(){
+    table= new Table({
+        head: ['ID','Product Name', 'Rarity','Price','Quantity on hand']
+      , colWidths: [5,30,10,10,20]
+    });
+    
+}
 
+function lowInvTable(){
+
+    lowtable= new Table({
+        head: ['ID','Product Name','Price','Quantity on hand']
+      , colWidths: [5,30,10,20]
+    });
+}
