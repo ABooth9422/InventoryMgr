@@ -104,7 +104,7 @@ function afterConnection() {
                         )
                         //logging the results of the purchase and the amount with literals! They are a life saver for this project
                         log(startColor.bold(`Congratulations you have purchased ${resp.itemqty} of ${resultArray[resp.choices -1]}`))
-                        log(startColor.bold(`The total for your order is: $ ${total}`))
+                        log(startColor.bold(`The total for your order is: $ ${total.toFixed(2)}`))
                         log('\n')
                     }
                     //after the initial purchase is made we prompt for what they want to do next.
@@ -275,6 +275,7 @@ function afterConnection() {
                 function (err, resp) {
                     //letting the user know the product has been added
                    log(startColor.bold("*****************Your Product Has Been Added***********************"))
+                   
                     if (err) throw err;
                     // executing the callback for the manager menu
                     managerFunction(table);
@@ -308,7 +309,7 @@ function afterConnection() {
                 }],
                 function (err, resp) {
                     if (err) throw err;
-                    console.log('*********************Product Updated************************')
+                    log(startColor.bold('*********************Product Updated************************'))
                     // executing a callback from the manager function menu
                     managerFunction(table);
                 })

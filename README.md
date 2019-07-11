@@ -43,7 +43,10 @@ If the user specifies they want to purchase more of an item than that is contain
 ## Manager Menu
 ---
 After the initial purchase has been made we prompt the users to see if they want to either be finished or go into the manager menu. The 
-manager menu does require a password to be in the manager :1234.
+manager menu does require a password to be in the manager :1234. If the user does not input the correct passwor they will not be able to go into the manager menu.
+
+
+![](images/mgrandpassword2.jpg)
 
 After that function it will inquire the following menu for the manager menu:<br />
  <ul> <li>View Products For Sale</li>
